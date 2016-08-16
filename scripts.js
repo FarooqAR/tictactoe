@@ -1,8 +1,8 @@
 $(document).ready(function() {
     var user = [],
         comp = [];
-    var user_choice = null;//nought or cross
-    var pcomb = {//all the possible combinations
+    var user_choice = null; //nought or cross
+    var pcomb = { //all the possible combinations
         0: [
             [1, 2],
             [3, 6],
@@ -46,72 +46,97 @@ $(document).ready(function() {
             [6, 7]
         ]
     };
-    var all = [0,1,2,3,4,5,6,7,8];
+    var all = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     showStartDialog();
-    $("button").click(function(){
-        var key = parseInt($(this).val());
-        $(this).attr("disabled",true);
-        user.push(key);
+    $("button").click(function() {
+        if (user.length <= comp.length) { //if its really his turn
+            var key = parseInt($(this).val());
+            $(this).attr("disabled", true);
+            user.push(key);
+            $(this).css({
+                "background-image": "url('" + user_choice + ".png')"
+            });
+            if (wins(user)) {
+                showMsgDialog("You Win!");
+            } else {
+                //get the available moves
+                var unmarked = all.filter(function(a) {
+                    return user.indexOf(a) == -1 && comp.indexOf(a) == -1;
+                });
+                
+                if (user.length + comp.length == 9) { //if no moves are available
+                    showMsgDialog("It's a tie!");
+                } else if (mark(comp, user)) { //if computer can win, don't lose the opportunity
+                    markUi(mark(comp, user));
+                    showMsgDialog("You Lose!");
+                } else if (mark(user, comp)) { //if user can win, don't let him
+                    markUi(mark(user, comp));
+                } else {
+                    if(user.indexOf(5) !== -1 && user.indexOf(7) !== -1 && unmarked.indexOf(8) !== -1){
+                        markUi(8);
+                    }
+                    else if (unmarked.indexOf(4) !== -1) { //if move 4 is available then mark it
+                        markUi(4);
+                    } else { //otherwise mark the first of the available moves
+                        markUi(unmarked[0]);
+                    }
+                }
+            }
 
-        //get the available moves
-        var unmarked = all.filter(function(a){
-            return user.indexOf(a) == -1 && comp.indexOf(a) == -1;
-        });
-        $(this).css({"background-image":"url('"+user_choice+".png')"});
-        if(user.length + comp.length == 9){//if no moves are available
-            showMsgDialog("It's a tie!");
         }
-        if(mark(comp,user)){//if computer can win, don't lose the opportunity
-            markUi(mark(comp,user));
-            showMsgDialog("You Lose!");
-        }
-        else if(mark(user,comp)){//if user can win, don't let him
-            markUi(mark(user,comp));
-        }
-        else{
-            if(unmarked.indexOf(4) !== -1){//if move 4 is available then mark it
-                markUi(4);
-            }
-            else{//otherwise mark the first of the available moves
-                markUi(unmarked[0]);
-            }
-        }
+
     });
-    $(".dialog .choice").on("click",function(){
+    $(".dialog .choice").on("click", function() {
         user_choice = this.classList[1];
         hideStartDialog();
     });
-    $(".start_again").on("click",function(){
+    $(".start_again").on("click", function() {
         hideMsgDialog();
         showStartDialog();
     });
-    function showStartDialog(){
+
+    function showStartDialog() {
         clearMoves();
         $(".dialog_main.start").fadeIn(300);
-        $("button").attr("disabled",true);
+        $("button").attr("disabled", true);
     }
-    function hideStartDialog(){
+
+    function hideStartDialog() {
         $(".dialog_main.start").fadeOut(300);
-        $("button").attr("disabled",false);
+        $("button").attr("disabled", false);
     }
-    function showMsgDialog(msg){
-        $(".dialog_main.msg").fadeIn(300);
-        $(".dialog_main.msg .title").text(msg);
+
+    function showMsgDialog(msg) {
+        setTimeout(function() {
+
+            $(".dialog_main.msg").fadeIn(300);
+            $(".dialog_main.msg .title").text(msg);
+        }, 1000);
     }
-    function hideMsgDialog(){
+
+    function hideMsgDialog() {
         $(".dialog_main.msg").fadeOut(300);
         $(".dialog_main.msg .title").text("");
         showStartDialog();
     }
-    function clearMoves(){
+
+    function clearMoves() {
         user = [];
         comp = [];
-        $("button").attr("disabled",false).css({"background-image":"none","opacity":"1"});
+        $("button").attr("disabled", false).css({
+            "background-image": "none",
+            "opacity": "1"
+        });
     }
     //go for the available move
-    function markUi(num){
-        $('button[value="'+num+'"]').attr("disabled",true).css({"background-image":"url('"+((user_choice=="cross")?"nought":"cross")+".png')","opacity":"0.6"});
-        comp.push(num);
+    function markUi(num) {
+        setTimeout(function() {
+            $('button[value="' + num + '"]').attr("disabled", true).css({
+                "background-image": "url('" + ((user_choice == "cross") ? "nought" : "cross") + ".png')",
+                "opacity": "0.6"
+            });
+            comp.push(num);
+        }, 1000);
     }
 
     //returns move number if p1 can win
@@ -131,6 +156,18 @@ $(document).ready(function() {
         }
         return false;
     }
+
+    function wins(p1) {
+        for (var i = 0; i < p1.length; i++) {
+            for (var j = 0; j < pcomb[p1[i]].length; j++) {
+                if (p1.indexOf(pcomb[p1[i]][j][0]) !== -1 && p1.indexOf(pcomb[p1[i]][j][1]) !== -1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     function not(num) {
         return (num == 1) ? 0 : 1;
     }
