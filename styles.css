@@ -23,6 +23,7 @@ h1{
     background-size: contain;
     border: none;
     outline: none;
+    background-color: rgb(221,221,221);
 }
 .btns button:active{
     background-color: #999;
